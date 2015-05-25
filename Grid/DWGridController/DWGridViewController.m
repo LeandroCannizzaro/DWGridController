@@ -122,6 +122,59 @@
     }
 }
 
+#pragma mark - GridView delegate
+-(void)gridView:(DWGridView *)gridView didMoveRow:(DWGridViewCell *)cell fromPosition:(DWPosition)fromPosition toPosition:(DWPosition)toPosition{
+    //moving vertically
+    toPosition = [gridView normalizePosition:toPosition];
+    if(toPosition.column == fromPosition.column)
+    {
+        //How many places is the tile moved (can be negative!)
+        NSInteger amount = toPosition.row - fromPosition.row;
+        NSMutableDictionary *cellDict = [self cellDictionaryAtPosition:fromPosition];
+        NSMutableDictionary *toCell;
+        do
+        {
+            //Get the next cell
+            toCell = [self cellDictionaryAtPosition:toPosition];
+            
+            //update the current cell
+            [cellDict setObject:[NSNumber numberWithInt:toPosition.row] forKey:@"Row"];
+            
+            //prepare the next cell
+            cellDict = toCell;
+            
+            //calculate the next position
+            toPosition.row += amount;
+            
+            toPosition = [gridView normalizePosition:toPosition];
+        }while (toCell);
+    }
+    else //moving horizontally
+    {
+        //How many places is the tile moved (can be negative!)
+        NSInteger amount = toPosition.column - fromPosition.column;
+        NSMutableDictionary *cellDict = [self cellDictionaryAtPosition:fromPosition];
+        NSMutableDictionary *toCell;
+        do
+        {
+            //Get the next cell
+            toCell = [self cellDictionaryAtPosition:toPosition];
+            
+            //update the current cell
+            [cellDict setObject:[NSNumber numberWithInt:toPosition.column] forKey:@"Column"];
+            
+            //prepare the next cell
+            cellDict = toCell;
+            
+            //calculate the next position
+            toPosition.column += amount;
+            toPosition = [gridView normalizePosition:toPosition];
+        }while (toCell);
+        
+    }
+}
+
+
 -(DWGridViewCell *)gridView:(DWGridView *)gridView cellAtPosition:(DWPosition)position{
     DWGridViewCell *cell = [[self cellDictionaryAtPosition:position] objectForKey:@"Cell"];
     
@@ -138,7 +191,9 @@
 }
 
 -(NSInteger)supportedInterfaceOrientations{
-    return UIInterfaceOrientationMaskLandscape;
+//    return UIInterfaceOrientationMaskLandscape;
+    return UIInterfaceOrientationMaskPortrait;
+
 }
 
 #pragma mark - Private methods

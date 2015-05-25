@@ -24,6 +24,7 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column);
 -(BOOL)gridView:(DWGridView *)gridView shouldScrollCell:(DWGridViewCell *)cell atPosition:(DWPosition)position;
 -(void)gridView:(DWGridView *)gridView willMoveCell:(DWGridViewCell *)cell fromPosition:(DWPosition)fromPosition toPosition:(DWPosition)toPosition;
 -(void)gridView:(DWGridView *)gridView didMoveCell:(DWGridViewCell *)cell fromPosition:(DWPosition)fromPosition toPosition:(DWPosition)toPosition;
+-(void)gridView:(DWGridView *)gridView didMoveRow:(DWGridViewCell *)cell fromPosition:(DWPosition)fromPosition toPosition:(DWPosition)toPosition;
 -(void)gridView:(DWGridView *)gridView didSelectCell:(DWGridViewCell *)cell atPosition:(DWPosition)position;
 @end
 

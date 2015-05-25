@@ -188,6 +188,7 @@
 				6B7C8573167B39BD007B7655 /* DWAppDelegate.h */,
 				6B7C8574167B39BD007B7655 /* DWAppDelegate.m */,
 				43F295D216D406C4009035BA /* DWExampleGridViewController.h */,
+				6B7C858C167B3AB7007B7655 /* DWGridViewCell.m */,
 				43F295D316D406C5009035BA /* DWExampleGridViewController.m */,
 				43ECDB7717B94067004C0439 /* DWExampleGridViewCell.h */,
 				43ECDB7817B94067004C0439 /* DWExampleGridViewCell.m */,
@@ -218,7 +219,6 @@
 				6B7C8588167B3A5A007B7655 /* DWGridView.h */,
 				6B7C8589167B3A5A007B7655 /* DWGridView.m */,
 				6B7C858B167B3AB7007B7655 /* DWGridViewCell.h */,
-				6B7C858C167B3AB7007B7655 /* DWGridViewCell.m */,
 			);
 			name = DWGridController;
 			sourceTree = "<group>";
