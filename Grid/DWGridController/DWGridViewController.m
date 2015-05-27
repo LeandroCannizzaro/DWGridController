@@ -31,6 +31,29 @@
     return self;
 }
 
+NSArray* Items;
+NSArray* Refinements;
+NSArray* Attributes;
+NSInteger itemsPointer;
+
+- (void)fetchedData:(NSData *)responseData {
+    //parse out the json data
+    NSError* error;
+    NSDictionary* json = [NSJSONSerialization
+            JSONObjectWithData:responseData //1
+
+                       options:kNilOptions
+                         error:&error];
+
+
+    Items = [json objectForKey:@"Items"]; //2
+    Refinements = [json objectForKey:@"Refinements"]; //2
+    Attributes = [json objectForKey:@"Attributes"]; //2
+
+
+    //NSLog(@"loans: %@", latestLoans); //3
+}
+
 
 - (id)createView
 {
@@ -40,12 +63,12 @@
         //NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
 
 
-//        dispatch_async(kBgQueue, ^{
-//            NSData* data = [NSData dataWithContentsOfURL:
-//                    kLatestKivaLoansURL];
-//            [self performSelectorOnMainThread:@selector(fetchedData:)
-//                                   withObject:data waitUntilDone:YES];
-//        });
+        dispatch_async(kBgQueue, ^{
+            NSData* data = [NSData dataWithContentsOfURL:
+                    kLatestKivaLoansURL];
+            [self performSelectorOnMainThread:@selector(fetchedData:)
+                                   withObject:data waitUntilDone:YES];
+        });
 
 
         //fetch total grid size
