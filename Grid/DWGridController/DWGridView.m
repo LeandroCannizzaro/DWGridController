@@ -30,7 +30,7 @@
 @synthesize dataSource;
 
 static const CGFloat stepSize = 300.0;
-static const NSInteger outerOffset = 1;
+static const NSInteger outerOffset = 1; //1;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -93,7 +93,7 @@ static const NSInteger outerOffset = 1;
             //Skip items that can't be reached
             if([self shouldSkipItemAtRow:row column:column])
             {
-                continue;
+               continue;
             }
             
             //fetch the cell for the current position
@@ -240,7 +240,6 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column)
 
 -(void)panGestureDetected:(UIPanGestureRecognizer *)gestureRecognizer
 {
-    
     CGPoint velocity = [gestureRecognizer velocityInView:self];
     
 	if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
@@ -264,7 +263,7 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column)
         shouldReload = _lastTouchedPosition.row < 0;
         shouldReload = shouldReload ? shouldReload : (_lastTouchedPosition.row != touchPosition.row && _isMovingHorizontally);
         shouldReload = shouldReload ? shouldReload : (fabsf(velocity.y) > fabsf(velocity.x) && _isMovingHorizontally);
-        //shouldReload = shouldReload ? shouldReload : (_lastTouchedPosition.column != touchPosition.column && _isMovingVertically);
+        shouldReload = shouldReload ? shouldReload : (_lastTouchedPosition.column != touchPosition.column && _isMovingVertically);
         shouldReload = shouldReload ? shouldReload : (fabsf(velocity.x) > fabsf(velocity.y) && _isMovingVertically);
         
         if(shouldReload)
@@ -294,8 +293,8 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column)
             _isMovingVertically = YES;
             DWPosition touchPosition = _lastTouchedPosition;//[self determinePositionAtPoint:[gestureRecognizer locationInView:self]];
             CGPoint translation = [gestureRecognizer translationInView:self];
-            //[self moveCellAtPosition:touchPosition verticallyBy:velocity.y withTranslation:translation reloadingData:YES];
-            [self moveRowAtPosition:touchPosition verticallyBy:velocity.y withTranslation:translation reloadingData:YES];
+            [self moveCellAtPosition:touchPosition verticallyBy:velocity.y withTranslation:translation reloadingData:YES];
+            //[self moveRowAtPosition:touchPosition verticallyBy:velocity.y withTranslation:translation reloadingData:YES];
             [gestureRecognizer setTranslation:CGPointZero inView:self];
         }
 	}
@@ -364,7 +363,7 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column)
     
     if(isMovingHorizontally)
     {
-        [self moveCellAtPosition:position horizontallyBy:velocity withTranslation:translation reloadingData:reloadingData];
+        [self moveColumnAtPosition:position horizontallyBy:velocity withTranslation:translation reloadingData:reloadingData];
     }
     else
     {
@@ -487,6 +486,7 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column)
 
 -(void)easeColumn:(NSDictionary *)params
 {
+    //return;
     CGPoint velocity = CGPointMake([[params objectForKey:@"VelocityX"] floatValue], [[params objectForKey:@"VelocityY"] floatValue]);
     DWPosition touchPosition = DWPositionMake([[params objectForKey:@"TouchRow"] floatValue], [[params objectForKey:@"TouchColumn"] floatValue]);
     
@@ -508,66 +508,65 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column)
     CGFloat direction = velocity.y / stepSize;
     if(velocity.y < 0) //moving up
     {
+        int c = touchPosition.column;
         bool doExit = false;
         for(CGFloat i = 0; ![[NSThread currentThread] isCancelled]; i+=fabsf(direction))
         {
             doExit = false;
             if( i >= fabsf(velocity.y) - rowHeight)
             {
-                //int c = touchPosition.column;
-                for(int c = -outerOffset; c < _numberOfVisibleColumnsInGrid+outerOffset; c++)
+                //for(int c = -outerOffset; c < _numberOfVisibleColumnsInGrid+outerOffset; c++)
                 //for(int c = 0; c< _numberOfVisibleColumnsInGrid; c++)
                 {
 
                     DWGridViewCell *cell = [self.delegate gridView:self cellAtPosition:DWPositionMake(0, c)];
-                    if((int)roundf(cell.frame.origin.y) % (int)roundf(rowHeight) == 0)
-                    {
-                        if(cell.frame.origin.y != 0)
-                        {
+                    if ((int) roundf(cell.frame.origin.y) % (int) roundf(rowHeight) == 0) {
+                        if (cell.frame.origin.y != 0) {
                             direction = cell.frame.origin.y - rowHeight;
                             NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                  [NSNumber numberWithFloat:velocity.y], @"velocity",
-                                                  [NSNumber numberWithBool:YES], @"reloadingData",
-                                                  [NSNumber numberWithFloat:0], @"translationX",
-                                                  [NSNumber numberWithFloat:direction], @"translationY",
-                                                  [NSNumber numberWithBool:NO], @"isMovingHorizontally",
-                                                  [NSNumber numberWithInt:0], @"positionX",
-                                                  [NSNumber numberWithInt:c], @"positionY",
-                                                  nil];
+                                    [NSNumber numberWithFloat:velocity.y], @"velocity",
+                                    [NSNumber numberWithBool:YES], @"reloadingData",
+                                    [NSNumber numberWithFloat:0], @"translationX",
+                                    [NSNumber numberWithFloat:direction], @"translationY",
+                                    [NSNumber numberWithBool:NO], @"isMovingHorizontally",
+                                    [NSNumber numberWithInt:0], @"positionX",
+                                    [NSNumber numberWithInt:c], @"positionY",
+                                            nil];
                             [self performSelectorOnMainThread:@selector(moveCellSelector:) withObject:dict waitUntilDone:YES];
                         }
                         doExit = true;
                         break;
                     }
                 }
-                if (doExit)
-                    break;
             }
-            
+
             direction = (velocity.y + i) / stepSize;
             NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  [NSNumber numberWithFloat:velocity.y], @"velocity",
-                                  [NSNumber numberWithBool:YES], @"reloadingData",
-                                  [NSNumber numberWithFloat:0], @"translationX",
-                                  [NSNumber numberWithFloat:direction], @"translationY",
-                                  [NSNumber numberWithBool:NO], @"isMovingHorizontally",
-                                  [NSNumber numberWithInt:touchPosition.row], @"positionX",
-                                  [NSNumber numberWithInt:touchPosition.column], @"positionY",
-                                  nil];
+                    [NSNumber numberWithFloat:velocity.y], @"velocity",
+                    [NSNumber numberWithBool:YES], @"reloadingData",
+                    [NSNumber numberWithFloat:0], @"translationX",
+                    [NSNumber numberWithFloat:direction], @"translationY",
+                    [NSNumber numberWithBool:NO], @"isMovingHorizontally",
+                    [NSNumber numberWithInt:touchPosition.row], @"positionX",
+                    [NSNumber numberWithInt:c], @"positionY",
+                            nil];
             [self performSelectorOnMainThread:@selector(moveCellSelector:) withObject:dict waitUntilDone:YES];
+            //if (doExit)
+            //    break;
+
             [NSThread sleepForTimeInterval:0.001];
         }
     }
     else //moving down
     {
+        int c = touchPosition.column;
         bool doExit = false;
         for(CGFloat i = 0; ![[NSThread currentThread] isCancelled]; i+=fabsf(direction))
         {
             doExit = false;
             if( i >= fabsf(velocity.y) - rowHeight)
             {
-                //int c = touchPosition.column;
-                for(int c = -outerOffset; c < _numberOfVisibleColumnsInGrid+outerOffset; c++)
+                //for(int c = -outerOffset; c < _numberOfVisibleColumnsInGrid+outerOffset; c++)
                 {
                     DWGridViewCell *cell = [self.delegate gridView:self cellAtPosition:DWPositionMake(0, c)];
                     if((int)roundf(cell.frame.origin.y) % (int)roundf(rowHeight) == 0)
@@ -589,24 +588,24 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column)
                         doExit = true;
                         break;
                     }
-                
-            
-                    direction = (velocity.y - i) / stepSize;
-                    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  [NSNumber numberWithFloat:velocity.y], @"velocity",
-                                  [NSNumber numberWithBool:YES], @"reloadingData",
-                                  [NSNumber numberWithFloat:0], @"translationX",
-                                  [NSNumber numberWithFloat:direction], @"translationY",
-                                  [NSNumber numberWithBool:NO], @"isMovingHorizontally",
-                                  [NSNumber numberWithInt:touchPosition.row], @"positionX",
-                                  [NSNumber numberWithInt:c], @"positionY",
-                                  nil];
-                    [self performSelectorOnMainThread:@selector(moveCellSelector:) withObject:dict waitUntilDone:YES];
-            
                 }
             }
-            if (doExit)
-                break;
+
+
+            direction = (velocity.y - i) / stepSize;
+            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+                          [NSNumber numberWithFloat:velocity.y], @"velocity",
+                          [NSNumber numberWithBool:YES], @"reloadingData",
+                          [NSNumber numberWithFloat:0], @"translationX",
+                          [NSNumber numberWithFloat:direction], @"translationY",
+                          [NSNumber numberWithBool:NO], @"isMovingHorizontally",
+                          [NSNumber numberWithInt:touchPosition.row], @"positionX",
+                          [NSNumber numberWithInt:c], @"positionY",
+                          nil];
+            [self performSelectorOnMainThread:@selector(moveCellSelector:) withObject:dict waitUntilDone:YES];
+
+            //if (doExit)
+            //    break;
             [NSThread sleepForTimeInterval:0.001];
             
         }

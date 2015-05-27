@@ -5,10 +5,11 @@
 //  Created by Alvin Nutbeij on 12/14/12.
 //  Copyright (c) 2013 Devwire. All rights reserved.
 //
-
+//LazyTableAppDelegate
 #import <UIKit/UIKit.h>
 
 #import "DWAppDelegate.h"
+
 
 int main(int argc, char *argv[])
 {

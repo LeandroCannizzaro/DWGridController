@@ -14,9 +14,11 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        // Initialization code
+        self.layer.borderColor = [[UIColor whiteColor] CGColor];
+        self.layer.borderWidth = 5.0;
     }
     return self;
+
 }
 
 /*

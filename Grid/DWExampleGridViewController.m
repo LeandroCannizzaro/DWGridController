@@ -8,18 +8,64 @@
 
 #import "DWExampleGridViewController.h"
 #import "DWExampleGridViewCell.h"
+
+#define kBgQueue dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) //1
+#define kLatestKivaLoansURL [NSURL URLWithString: @"http://api.yoox.biz/YooxCore.API/1.0/YOOX_US/SearchResults?dept=women&Gender=D&noItems=0&noRef=0&page=1"]
+//http://api.kivaws.org/v1/loans/search.json?status=fundraising"] //2
+
 @interface DWExampleGridViewController ()
 
 @end
 
 @implementation DWExampleGridViewController
 
+NSArray* Items;
+NSArray* Refinements;
+NSArray* Attributes;
+NSInteger itemsPointer;
+
+- (void)fetchedData:(NSData *)responseData {
+    //parse out the json data
+    NSError* error;
+    NSDictionary* json = [NSJSONSerialization
+            JSONObjectWithData:responseData //1
+
+                       options:kNilOptions
+                         error:&error];
+
+
+    Items = [json objectForKey:@"Items"]; //2
+    Refinements = [json objectForKey:@"Refinements"]; //2
+    Attributes = [json objectForKey:@"Attributes"]; //2
+
+
+    //NSLog(@"loans: %@", latestLoans); //3
+}
+
 - (id)init
 {
     self = [super init];
     if (self) {
-        for(int row = 0; row < 9; row++){
-            for(int col = 0; col < 9; col++){
+
+
+        //NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
+
+
+        dispatch_async(kBgQueue, ^{
+            NSData* data = [NSData dataWithContentsOfURL:
+                    kLatestKivaLoansURL];
+            [self performSelectorOnMainThread:@selector(fetchedData:)
+                                   withObject:data waitUntilDone:YES];
+        });
+
+
+        //fetch total grid size
+
+        NSInteger  _numberOfRowsInGrid = [self numberOfRowsInGridView:self.gridView];
+        NSInteger _numberOfColumnsInGrid = [self numberOfColumnsInGridView:self.gridView];
+
+        for(int row = 0; row < _numberOfRowsInGrid; row++){
+            for(int col = 0; col < _numberOfColumnsInGrid; col++){
                 DWExampleGridViewCell *cell = [[DWExampleGridViewCell alloc] init];
                 cell.backgroundColor = [UIColor blueColor];
 
@@ -34,10 +80,10 @@
                 [cell addSubview:iv];
 
                 CGFloat h = 50;
-                UITextView *tv = [[UITextView alloc] initWithFrame:CGRectMake(0, 100 ,  70, h)];
+                UITextView *tv = [[UITextView alloc] init];
                 tv.backgroundColor = [UIColor brownColor];
                // initWithFrame:CGRectMake(10, 10,  300, 100 + 16)];
-                [tv setFont:[UIFont systemFontOfSize:16]];
+                [tv setFont:[UIFont systemFontOfSize:14]];
                 tv.text = [NSString stringWithFormat:@"XX %d-%d",row,col];
                 tv.userInteractionEnabled = NO;
                 tv.tag="text";
@@ -96,19 +142,19 @@
 
 #pragma mark - GridView datasource
 -(NSInteger)numberOfColumnsInGridView:(DWGridView *)gridView{
-    return 6;
+    return 4;
 }
 
 -(NSInteger)numberOfRowsInGridView:(DWGridView *)gridView{
-    return 6;
+    return 4;
 }
 
 -(NSInteger)numberOfVisibleRowsInGridView:(DWGridView *)gridView{
-    return 4;
+    return 2;
 }
 
 -(NSInteger)numberOfVisibleColumnsInGridView:(DWGridView *)gridView{
-    return 4;
+    return 2;
 }
 
 #pragma mark - GridView delegate
