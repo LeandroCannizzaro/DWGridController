@@ -12,6 +12,8 @@
 
 @property (nonatomic, retain) DWGridView *gridView;
 @property (nonatomic, retain) NSMutableArray *cells;
-
+@property (nonatomic,retain ) NSArray *Items;
+@property (nonatomic,retain) NSDictionary* json;
 -(NSMutableDictionary *)cellDictionaryAtPosition:(DWPosition)position;
+-(void) addItems:(NSArray *)toAdd;
 @end

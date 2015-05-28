@@ -18,12 +18,16 @@
 @implementation DWGridViewController
 @synthesize gridView = _gridView;
 @synthesize cells = _cells;
+@synthesize Items = _Items;
+@synthesize json = _json;
 
+//NSDictionary* json;
 -(id)init
 {
     self = [super init];
     if(self)
     {
+        _gridView = [[DWGridView alloc] init];
         _cells = [[NSMutableArray alloc] init];
         [self createView];
     }
@@ -31,29 +35,40 @@
     return self;
 }
 
-NSArray* Items;
-NSArray* Refinements;
-NSArray* Attributes;
-NSInteger itemsPointer;
 
 - (void)fetchedData:(NSData *)responseData {
     //parse out the json data
     NSError* error;
-    NSDictionary* json = [NSJSONSerialization
+    self.json = [NSJSONSerialization
             JSONObjectWithData:responseData //1
 
                        options:kNilOptions
                          error:&error];
 
 
-    Items = [json objectForKey:@"Items"]; //2
-    Refinements = [json objectForKey:@"Refinements"]; //2
-    Attributes = [json objectForKey:@"Attributes"]; //2
+    //self.gridView.Items = [self.json objectForKey:@"Items"];
+    //self.gridView.Items[0]
+    //NSLog(@"ITEMS",self.gridView.Items);
+    //[[self.gridView.dataSource.Items] json objectForKey:@"Items"];
+
+    //NSArray *I = [self.gridView.dataSource Items];
+    //I = [json objectForKey:@"Items"];
+
+    //[self Items:self.gridView.dataSource ] = [json objectForKey:@"Items"]; //2
+    //Refinements = [json objectForKey:@"Refinements"]; //2
+    //Attributes = [json objectForKey:@"Attributes"]; //2
 
 
     //NSLog(@"loans: %@", latestLoans); //3
 }
 
+-(void)downloadData{
+
+}
+
+- (void)addItems:(NSArray *)toAdd{
+    _Items = [_Items  arrayByAddingObjectsFromArray: toAdd];
+}
 
 - (id)createView
 {
@@ -61,14 +76,20 @@ NSInteger itemsPointer;
 
 
         //NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
-
-
-        dispatch_async(kBgQueue, ^{
-            NSData* data = [NSData dataWithContentsOfURL:
-                    kLatestKivaLoansURL];
-            [self performSelectorOnMainThread:@selector(fetchedData:)
-                                   withObject:data waitUntilDone:YES];
-        });
+        NSError* error;
+        NSData* data = [NSData dataWithContentsOfURL:kLatestKivaLoansURL];
+        _json = [NSJSONSerialization
+                JSONObjectWithData:data
+                options:kNilOptions
+                  error:&error];
+        //self.gridView.Items = [_json objectForKey:@"Items"];
+        _Items = [_json objectForKey:@"Items"];
+//self.Items = [json objectForKey:@"Items"];
+//        dispatch_async(kBgQueue, ^{
+//            NSData* data = [NSData dataWithContentsOfURL: kLatestKivaLoansURL];
+//            [self performSelectorOnMainThread:@selector(fetchedData:)
+//                                   withObject:data waitUntilDone:YES];
+//        });
 
 
         //fetch total grid size
@@ -81,9 +102,10 @@ NSInteger itemsPointer;
                 DWGridViewCell *cell = [[DWGridViewCell alloc] init];
                 cell.backgroundColor = [UIColor blueColor];
 
-                UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"%d-%d.jpeg",row,col]];
-                UIImageView *iv = [[UIImageView alloc] initWithImage:image];
-                //UIImageView *iv = [[UIImageView alloc] init];
+                //UIImage *image = [UIImage imageNamed:[NSString stringWithFormat:@"%d-%d.jpeg",row,col]];
+                //UIImageView *iv = [[UIImageView alloc] initWithImage:image];
+                UIImageView *iv = [[UIImageView alloc] init];
+
                 [iv setContentMode:UIViewContentModeScaleAspectFill];
                 iv.clipsToBounds = YES;
                 [iv setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -134,10 +156,10 @@ NSInteger itemsPointer;
                 [dict setObject:cell forKey:@"Cell"];
                 [dict setObject:[NSNumber numberWithInt:row] forKey:@"Row"];
                 [dict setObject:[NSNumber numberWithInt:col] forKey:@"Column"];
-                [dict setObject:tv.text forKey:@"Text"];
+                //[dict setObject:tv.text forKey:@"Text"];
 
-                if(image)
-                    [dict setObject:image forKey:@"Image"];
+                //if(image)
+                //    [dict setObject:image forKey:@"Image"];
                 [self.cells addObject:dict];
 
             }
@@ -154,11 +176,11 @@ NSInteger itemsPointer;
 
 #pragma mark - GridView datasource
 -(NSInteger)numberOfColumnsInGridView:(DWGridView *)gridView{
-    return 4;
+    return 2;
 }
 
 -(NSInteger)numberOfRowsInGridView:(DWGridView *)gridView{
-    return 4;
+    return 2;
 }
 
 -(NSInteger)numberOfVisibleRowsInGridView:(DWGridView *)gridView{
@@ -196,7 +218,7 @@ NSInteger itemsPointer;
 
 -(void)loadView
 {
-    _gridView = [[DWGridView alloc] init];
+//    _gridView = [[DWGridView alloc] init];
     _gridView.delegate = self;
     _gridView.dataSource = self;
     _gridView.clipsToBounds = YES;

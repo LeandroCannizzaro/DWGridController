@@ -26,6 +26,9 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column);
 -(void)gridView:(DWGridView *)gridView didMoveCell:(DWGridViewCell *)cell fromPosition:(DWPosition)fromPosition toPosition:(DWPosition)toPosition;
 -(void)gridView:(DWGridView *)gridView didMoveRow:(DWGridViewCell *)cell fromPosition:(DWPosition)fromPosition toPosition:(DWPosition)toPosition;
 -(void)gridView:(DWGridView *)gridView didSelectCell:(DWGridViewCell *)cell atPosition:(DWPosition)position;
+-(NSArray*) Items;
+-(void) addItems:(NSArray *)toAdd;
+
 @end
 
 @protocol DWGridViewDataSource <NSObject>
@@ -35,6 +38,12 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column);
 @optional
 -(NSInteger)numberOfVisibleRowsInGridView:(DWGridView *)gridView;
 -(NSInteger)numberOfVisibleColumnsInGridView:(DWGridView *)gridView;
+
+//-(NSArray*) Items;
+//-(NSArray*) Refinements;
+//-(NSArray*) Attributes;
+//-(NSInteger) itemsPointer;
+
 @end
 
 @interface DWGridView : UIView <UIGestureRecognizerDelegate>
@@ -54,7 +63,12 @@ static inline DWPosition DWPositionMake(NSInteger row, NSInteger column);
     
     NSThread *_easeThread;
     DWPosition _lastTouchedPosition;
+
+    //NSArray* Items;
+
 }
+
+//@property (nonatomic,retain) <DWGridViewDataSource>Items;
 
 @property (nonatomic,assign) id<DWGridViewDataSource>dataSource;
 @property (nonatomic,assign) id<DWGridViewDelegate>delegate;

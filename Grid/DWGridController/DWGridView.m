@@ -23,6 +23,8 @@
  */
 -(NSInteger)tagForPosition:(DWPosition)position;
 
+//-(NSArray*) Items;
+
 @end
 
 @implementation DWGridView
@@ -30,7 +32,14 @@
 @synthesize dataSource;
 
 static const CGFloat stepSize = 300.0;
-static const NSInteger outerOffset = 1; //1;
+static const NSInteger outerOffset = 0; //1;
+
+//@synthesize Items;
+//NSArray* Items;
+//NSArray* Refinements;
+//NSArray* Attributes;
+NSInteger itemsPointer = 0;
+NSInteger currentPage = 1;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -90,6 +99,7 @@ static const NSInteger outerOffset = 1; //1;
         //loop through the columns with 2 left and 2 right of the screen
         for(int column = -outerOffset; column < _numberOfVisibleColumnsInGrid+outerOffset; column++)
         {
+
             //Skip items that can't be reached
             if([self shouldSkipItemAtRow:row column:column])
             {
@@ -109,6 +119,8 @@ static const NSInteger outerOffset = 1; //1;
             cellFrame.origin.y = row * cellFrame.size.height;
             cell.frame = cellFrame;
 
+            UITextView *t;
+            UIImageView *i;
 
             //add the cell to the grid view
             if(![self.subviews containsObject:cell])
@@ -117,27 +129,62 @@ static const NSInteger outerOffset = 1; //1;
 
                 //NSArray *subviews = [view subviews];
 
-                UITextView *t = (UITextView *)[cell viewWithTag:"text"];
+                t = (UITextView *)[cell viewWithTag:"text"];
                 //[t sizeThatFits:<#(CGSize)size#>]
                 CGRect frame = t.frame;
                 frame.size.width = cell.bounds.size.width;
                 //frame.size.height = 10 * row;
                 frame.size.height = 2.5 * t.font.lineHeight;
                 frame.origin.y = cell.bounds.size.height - frame.size.height;
-                t.text = @"Xline1\nXline2";
+                //t.text = @"pippo";
                 //CGSize textSize = [t.text sizeWithFont:t.font forWidth:frame.size.width lineBreakMode: UILineBreakModeTailTruncation];
                 //frame.size.height = textSize.height;
                 t.frame = frame;
 
-                UIImageView *i = (UIImageView *)[cell viewWithTag:"image"];
+                i = (UIImageView *)[cell viewWithTag:"image"];
                 frame = i.frame;
                 frame.size.width = cell.bounds.size.width;
                 frame.size.height = cell.bounds.size.height - t.bounds.size.height;
                 frame.origin.y = 0; //cell.bounds.size.height - frame.size.height;
                 i.frame = frame;
+                //i.image = [UIImage imageNamed:[NSString stringWithFormat:@"%d-%d.jpeg",row,column]];
 
+
+            }else{
+                i = (UIImageView *)[cell viewWithTag:"image"];
+                t = (UITextView *)[cell viewWithTag:"text"];
             }
 
+            NSString *cod10 = [delegate.Items[itemsPointer * row + column] objectForKey: @"Cod10"];
+            NSString* txt  =  @(itemsPointer).stringValue;
+            txt = [txt stringByAppendingString: @"-" ];
+            txt = [txt stringByAppendingString: @(row).stringValue ];
+            txt = [txt stringByAppendingString: @"-" ];
+            txt = [txt stringByAppendingString: @(column).stringValue ];
+            txt = [txt stringByAppendingString: @"-" ];
+            txt = [txt stringByAppendingString: @(currentPage).stringValue ];
+            txt = [txt stringByAppendingString: @"-" ];
+            txt = [txt stringByAppendingString: cod10];
+            t.text =  txt ;
+
+            //http://cdn.yoox.biz/39/39432350JM_11_f.jpg
+            NSString* x = @"http://cdn.yoox.biz/";
+
+            x = [x stringByAppendingString: [cod10 substringWithRange:NSMakeRange(0,2)]];
+            x = [x stringByAppendingString: @"/"];
+            x = [x stringByAppendingString: cod10];
+            x = [x stringByAppendingString: @"_11_f.jpg"];
+
+            NSURL *imageURL = [NSURL URLWithString:x];
+
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+                NSData *imageData = [NSData dataWithContentsOfURL:imageURL];
+
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // Update the UI
+                    i.image = [UIImage imageWithData:imageData];
+                });
+            });
 
             //if the cell is on screen bring it to the front
             if(row >= 0 && row < _numberOfVisibleRowsInGrid && column >= 0 && column < _numberOfVisibleColumnsInGrid)
@@ -150,6 +197,30 @@ static const NSInteger outerOffset = 1; //1;
                 [self sendSubviewToBack:cell];
             }
         }
+    }
+    itemsPointer++;
+    if (currentPage * (itemsPointer * _numberOfVisibleRowsInGrid + _numberOfVisibleColumnsInGrid) > delegate.Items.count)
+    {
+        currentPage++;
+        NSString* x = @"http://api.yoox.biz/YooxCore.API/1.0/YOOX_US/SearchResults?dept=women&Gender=D&noItems=0&noRef=0&page=";
+
+        x = [x stringByAppendingString: @(currentPage).stringValue];
+
+        NSURL* xx = [NSURL URLWithString:x ];
+
+        NSError* error;
+        NSData* data = [NSData dataWithContentsOfURL:xx];
+        NSDictionary * _json = [NSJSONSerialization
+                JSONObjectWithData:data
+                           options:kNilOptions
+                             error:&error];
+        //self.gridView.Items = [_json objectForKey:@"Items"];
+
+        //_Items = [_json objectForKey:@"Items"];
+        NSArray * xxx = [_json objectForKey:@"Items"];
+        //NSArray * yyy = Items;
+        [delegate addItems:xxx];
+        //delegate.Items = [delegate.Items  arrayByAddingObjectsFromArray: xxx];
     }
 }
 
